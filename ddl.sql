@@ -55,3 +55,12 @@ CREATE TABLE megustas
 	bro_id integer REFERENCES bros(bro_id),
 	PRIMARY KEY	(mem_id, bro_id)
 );
+CREATE TABLE posts
+ (
+	post_id integer PRIMARY KEY,
+ 	sender integer REFERENCES bros(bro_id) NOT NULL,
+ 	postime date NOT NULL,
+ 	attached_mem integer REFERENCES memes(mem_id) NOT NULL,
+ 	comment text
+ );
+ 
