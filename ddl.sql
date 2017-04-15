@@ -18,3 +18,13 @@ CREATE TABLE public.bros
   gender floor,
   UNIQUE(bro_id)
 )
+
+CREATE TABLE memsages
+(
+	memsage_id integer PRIMARY KEY,
+	sender integer REFERENCES bros(bro_id) NOT NULL,
+	reciever integer REFERENCES bros(bro_id) NOT NULL,
+	send_time date NOT NULL,
+	attached_mem integer REFERENCES memes(mem_id) NOT NULL,
+	comment text
+)
