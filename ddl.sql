@@ -1,8 +1,3 @@
-DROP TABLE public.bros;
-
-DROP TABLE public.mems;
-
-
 CREATE TYPE mem_type AS ENUM ('picture', 'video', 'gif', 'coub', 'pasta');
 
 CREATE TABLE memes
@@ -42,3 +37,13 @@ CREATE TABLE memsages
  	attached_mem integer REFERENCES memes(mem_id) NOT NULL,
  	comment text
  );
+ 
+CREATE TYPE status_type AS ENUM ('follower', 'rejected', 'in black list')
+--первый подписан на второго, первый отказал в дружбе второму, первый добавил второго в черный литс
+CREATE TABLE relationships
+(
+	first_bro integer REFERENCES bros(bro_id),
+	second_bro integer REFERENCES bros(bro_id),
+	status status_type,
+	PRIMARY KEY (first_bro, second_bro)
+)
