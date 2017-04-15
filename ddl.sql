@@ -4,7 +4,8 @@ CREATE TABLE mems
 (
 	mem_id integer PRIMARY KEY,
 	--pics
-	name varchar(30) NOT NULL UNIQUE,
+	name varchar(30) NOT NULL,
 	type() mem_type,
-	origin text DEFAULT "Who knows ¯\_(ツ)_/¯"
+	origin text DEFAULT "Who knows ¯\_(ツ)_/¯",
+	CONSTRAINT unique_name UNIQUE(name)
 );
