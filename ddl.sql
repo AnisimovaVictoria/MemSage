@@ -47,7 +47,7 @@ CREATE TABLE relationships
 	second_bro integer REFERENCES bros(bro_id),
 	status status_type,
 	PRIMARY KEY (first_bro, second_bro)
-)
+);
 
 CREATE TABLE megustas
 (
@@ -55,6 +55,7 @@ CREATE TABLE megustas
 	bro_id integer REFERENCES bros(bro_id),
 	PRIMARY KEY	(mem_id, bro_id)
 );
+
 CREATE TABLE posts
  (
 	post_id integer PRIMARY KEY,
@@ -63,4 +64,3 @@ CREATE TABLE posts
  	attached_mem integer REFERENCES memes(mem_id) NOT NULL,
  	comment text
  );
- 
