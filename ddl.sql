@@ -28,6 +28,7 @@ WITH (
 );
 ALTER TABLE public.bros
   OWNER TO postgres;
+  
 CREATE TABLE memsages
  (
  	memsage_id integer PRIMARY KEY,
@@ -47,3 +48,10 @@ CREATE TABLE relationships
 	status status_type,
 	PRIMARY KEY (first_bro, second_bro)
 )
+
+CREATE TABLE megustas
+(
+	mem_id integer REFERENCES memes(mem_id),
+	bro_id integer REFERENCES bros(bro_id),
+	PRIMARY KEY	(mem_id, bro_id)
+);
