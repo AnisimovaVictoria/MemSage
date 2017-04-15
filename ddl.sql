@@ -33,3 +33,12 @@ WITH (
 );
 ALTER TABLE public.bros
   OWNER TO postgres;
+CREATE TABLE memsages
+ (
+ 	memsage_id integer PRIMARY KEY,
+ 	sender integer REFERENCES bros(bro_id) NOT NULL,
+ 	reciever integer REFERENCES bros(bro_id) NOT NULL,
+ 	send_time date NOT NULL,
+ 	attached_mem integer REFERENCES memes(mem_id) NOT NULL,
+ 	comment text
+ );
