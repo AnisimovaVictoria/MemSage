@@ -1,5 +1,4 @@
 CREATE TYPE mem_type AS ENUM ('picture', 'video', 'gif', 'coub', 'pasta');
-
 CREATE TABLE memes
 (
 	mem_id integer PRIMARY KEY,
@@ -10,14 +9,15 @@ CREATE TABLE memes
 	CONSTRAINT unique_name UNIQUE(name)
 );
 
-CREATE TYPE floor AS ENUM ('linoleum', 'laminat', 'kovrolin', 'keramogranit', 'parket');
+CREATE TYPE floor AS ENUM ('linoleum', 'laminate', 'kovrolin', 'keramogranit', 'parquet', 'hardwood', 'self-leveling');
+CREATE TYPE sp_type AS ENUM ('forever alone', 'IN LOVE');
 CREATE TABLE public.bros
 (
   bro_id integer PRIMARY KEY,
   name character varying(20) NOT NULL, -- Имя пользователя
   password character varying(30), -- Пароль
   fav_mem integer REFERENCES memes(mem_id), -- Любимый мем
-  SP character varying(30), -- семейное положение
+  SP sp_type, -- семейное положение
   occupation character varying(30), -- деятельность
   city character varying(30), -- город
   gender floor, --гендер пользователя
@@ -53,7 +53,7 @@ CREATE TABLE megustas
 (
 	mem_id integer REFERENCES memes(mem_id),
 	bro_id integer REFERENCES bros(bro_id),
-	PRIMARY KEY	(mem_id, bro_id)
+	PRIMARY KEY (mem_id, bro_id)
 );
 
 CREATE TABLE posts
