@@ -16,13 +16,12 @@ CREATE TABLE public.bros
 (
   bro_id integer PRIMARY KEY,
   name character varying(20) NOT NULL, -- Имя пользователя
-  password character varying(30), -- Пароль
+  password character varying(50), -- Пароль
   fav_mem integer REFERENCES memes(mem_id), -- Любимый мем
   SP sp_type, -- семейное положение
   occupation character varying(30), -- деятельность
   city character varying(30), -- город
   gender floor, --гендер пользователя
-  CHECK (length(password) >= 9)
 )
 WITH (
   OIDS=FALSE
