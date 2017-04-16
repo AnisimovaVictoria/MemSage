@@ -1,11 +1,12 @@
-CREATE TYPE mem_type AS ENUM ('picture', 'video', 'gif', 'coub', 'pasta');
+CREATE TYPE mem_type AS ENUM ('picture', 'video', 'gif', 'coub', 'pasta', 'text');
 CREATE TABLE memes
 (
 	mem_id integer PRIMARY KEY,
-	--pics
+	picture_filename varchar(50) NOT NULL,
 	name varchar(30) NOT NULL,
 	type mem_type,
 	origin text DEFAULT 'Who knows ¯\_(ツ)_/¯',
+	CONSTRAINT unique_picture UNIQUE(picture_filename),
 	CONSTRAINT unique_name UNIQUE(name)
 );
 
