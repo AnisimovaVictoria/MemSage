@@ -21,13 +21,8 @@ CREATE TABLE public.bros
   SP sp_type, -- семейное положение
   occupation character varying(30), -- деятельность
   city character varying(30), -- город
-  gender floor, --гендер пользователя
-)
-WITH (
-  OIDS=FALSE
+  gender floor --гендер пользователя
 );
-ALTER TABLE public.bros
-  OWNER TO postgres;
   
 CREATE TABLE memsages
  (
@@ -39,7 +34,7 @@ CREATE TABLE memsages
  	comment text
  );
  
-CREATE TYPE status_type AS ENUM ('follower', 'rejected', 'in black list')
+CREATE TYPE status_type AS ENUM ('follower', 'rejected', 'in black list');
 --первый подписан на второго, первый отказал в дружбе второму, первый добавил второго в черный литс
 CREATE TABLE relationships
 (
