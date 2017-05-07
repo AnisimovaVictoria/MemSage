@@ -1,62 +1,74 @@
 import telebot
 import os
 import time
-import config
-import keyboard
 from telebot import types
 from enum import Enum
+import config
+import keyboard
 import text
 bot = telebot.TeleBot(config.token)
 
+# в словаре по значанию chat.id хранится текущий статус беседы, на каком этапе она находится
 st = Enum('st', 'start interview choosing adding')
 status = {}
+# наверно лучше в словаре status хранить пару состояние и номер - лучше даже кортеж
 curr_question = {}
 curr_mem_type = {}
 
 
+# обработка команды /start
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = keyboard.start()
-    bot.send_message(message.chat.id, "Что ты хочешь?", reply_markup=markup)
+    bot.send_message(message.chat.id, "Привет! Я мем-бот. Если ты хочешь стать мем-богом, то обращайся)", reply_markup=keyboard.start())
     status[message.chat.id] = st.start
 
-
+# эта часть обрабатывает все другие сообщения
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def request(message):
     c = message.chat.id
     if c not in status:
         status[c] = st.start
-
-    if message.text in keyboard.start_buttons and status[c] == st.start:
+    # если пользователь на стартовой странице и пользователь ввел что-то адекватное
+    if status[c] == st.start and message.text in keyboard.start_buttons:
+        # Познакомиться
         if message.text == keyboard.start_buttons[0]:
             status[c] = st.interview
             curr_question[c] = 0
             bot.send_message(c, text.questions[0],
                              reply_markup=types.ReplyKeyboardRemove())
+        # Посмотреть мемес
         if message.text == keyboard.start_buttons[1]:
             status[c] = st.choosing
             bot.send_message(c, "Выбери тип:",
                              reply_markup=keyboard.choose_mem())
+        # Добавить мемес
         if message.text == keyboard.start_buttons[2]:
             status[c] = st.adding
+            bot.send_message(c, "Я пока этого не умею(")
         return
 
     if status[c] == st.interview:
         # кидать ошибку если номер текущего вопроса больше, чем нужно
-        # заносить данные в базу
+        # вот тут нужно заносить данные в базу, а не просто печатать
+        print(message.text)
         curr_question[c] += 1
         q = curr_question[c]
         bot.send_message(c, text.questions[q],
                          reply_markup=keyboard.interview[q]())
         if q == len(text.questions) - 1:
             status[c] = st.start
+        return
 
-    if message.text in keyboard.mem_types and status[c] == st.choosing:
+    # когда пользователь выбрал мем
+    if status[c] == st.choosing and message.text in keyboard.mem_types:
+        # пользователь нажал "Нвзад"
         if message.text == keyboard.mem_types[-1]:
             status[c] = st.start
             bot.send_message(c, "Что ты хочешь?", reply_markup=keyboard.start())
         else:
+            # запомнаю это, чтобы потом можно было переключаться между мемами - то есть чтобы они отправлялись не все разом, а поочереди
             curr_mem_type[c] = message.text
+            # тут нужно делать совсем другое: нужно отдельно запомнить для каждой фотки file_id, а потом по file_id отправлять
             for file in os.listdir('C:/Users/1/Downloads/' + message.text + '/'):
                 if file.split('.')[-1] in config.image_types:
                     f = open('C:/Users/1/Downloads/' + message.text + '/' + file, 'rb')
