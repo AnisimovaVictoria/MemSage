@@ -1,27 +1,33 @@
 CREATE TYPE mem_type AS ENUM ('picture', 'video', 'gif', 'coub', 'pasta', 'text');
-CREATE TABLE memes
+
+CREATE SEQUENCE auto_id_mems;
+CREATE TABLE public.memes
 (
-	mem_id integer PRIMARY KEY,
-	picture_filename varchar(50) NOT NULL,
-	name varchar(30) NOT NULL,
-	type mem_type,
-	origin text DEFAULT 'Who knows ¯\_(ツ)_/¯',
-	CONSTRAINT unique_picture UNIQUE(picture_filename),
-	CONSTRAINT unique_name UNIQUE(name)
+  mem_id integer NOT NULL DEFAULT nextval('auto_id_mems'::regclass),
+  mem_path character varying(256),
+  name character varying(30) NOT NULL,
+  type mem_type,
+  origin text DEFAULT 'Who knows ¯\_(ツ)_/¯'::text,
+  CONSTRAINT memes_pkey PRIMARY KEY (mem_id),
+  CONSTRAINT unique_name UNIQUE (name)
 );
 
 CREATE TYPE floor AS ENUM ('linoleum', 'laminate', 'kovrolin', 'keramogranit', 'parquet', 'hardwood', 'self-leveling');
 CREATE TYPE sp_type AS ENUM ('forever alone', 'IN LOVE');
+CREATE TYPE occup_type AS ENUM ('pre!shkolyar', 'shkolyar', 'fiztech!shkolyar', 'post!shkolyar');
+
+CREATE SEQUENCE auto_id_bros;
+
 CREATE TABLE public.bros
 (
-  bro_id integer PRIMARY KEY,
-  name character varying(20) NOT NULL, -- Имя пользователя
-  password character varying(50), -- Пароль
-  fav_mem integer REFERENCES memes(mem_id), -- Любимый мем
-  SP sp_type, -- семейное положение
-  occupation character varying(30), -- деятельность
-  city character varying(30), -- город
-  gender floor --гендер пользователя
+  bro_id integer NOT NULL DEFAULT nextval('auto_id_bros'::regclass),
+  name character varying(20) NOT NULL,
+  fav_mem integer DEFAULT 0,
+  sp sp_type DEFAULT 'forever alone'::sp_type,
+  occupation occup_type DEFAULT 'shkolyar'::occup_type,
+  city character varying(30),
+  gender floor DEFAULT 'linoleum'::floor,
+  CONSTRAINT bros_pkey PRIMARY KEY (bro_id)
 );
   
 CREATE TABLE memsages
