@@ -1,2 +1,2 @@
-token = '386600316:AAE3X_2jyAX5pT3L_iqq-4zHEOI_s0eXbQI'
+token = '345322026:AAFTsWzDy_QlA3Oz0b9sGR5B86PyoYJGF_8'
 image_types = ['jpg', 'jpeg', 'png']
