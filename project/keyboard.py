@@ -1,19 +1,22 @@
 from telebot import types
 
 
-start_menu = ["Познакомиться", "Посмотреть мем", "Добавить мем"]
-mem_types = ['кошки', 'Пепе', 'мопсы', "Назад 🔙"]
+start_menu = ["Посмотреть мем", "Добавить мем", "Найти друзей)"]
+mem_types = ['Хот', "Трендинг", 'Свежак', 'По категориям', "Назад 🔙"]
+mem_categories = ['Кошки', 'Пепе', 'Мопсы', "Назад 🔙"]
 
 
 def start():
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True,
+                                       resize_keyboard=True)
     for s in start_menu:
         markup.add(s)
     return markup
 
 
 def choose_mem():
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True,
+                                       resize_keyboard=True)
     for s in mem_types:
         markup.add(s)
     return markup
