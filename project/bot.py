@@ -16,12 +16,7 @@ def con_db():
 
 conn = con_db()
 curs = conn.cursor()
-
 bot = telebot.TeleBot(config.token)
-
-
-if (conn):
-    conn.close()
 
 
 @bot.message_handler(commands=['start'])
@@ -35,7 +30,7 @@ def interview(i):
     def ask_question(mes):
         print(mes.text)
         msg = bot.send_message(mes.chat.id, text.questions[i],
-                                   reply_markup=keyboard.interview[i]())
+                               reply_markup=keyboard.interview[i]())
         if i == len(text.questions) - 1:
             bot.register_next_step_handler(msg, main_menu)
         else:
@@ -76,5 +71,6 @@ def find_friend(mes):
 
 
 if __name__ == '__main__':
+    connect
     bot.polling(none_stop=True)
     curs.close()
