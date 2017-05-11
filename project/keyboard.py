@@ -6,7 +6,8 @@ mem_types = ['Хот', "Трендинг", 'Свежак', 'По категор�
 mem_categories = ['Кошки', 'Пепе', 'Мопсы', "Назад 🔙"]
 gender_types = ['ЛИНОЛЕУМ', 'ЛАМИНАТ', 'КОВРОЛИН', 'КЕРАМОГРАНИТ', 'ПАРКЕТ',
                 'БРЕВЕНЧАТЫЙ', 'НАЛИВНОЙ']
-sp_types = ["forever alone", "IN LOVE", "Все сложно"]
+sp_types = ["forever alone", "IN LOVE", "Все сложно", "есть еда"]
+occupation_types = ["Студент", "Школяр", "Работаю", "Все сложно"]
 
 
 def mem():
@@ -25,5 +26,6 @@ def make_markup(args):
     return markup
 
 
-rem = types.ReplyKeyboardRemove
-interview_markup = [rem, make_markup(gender_types), make_markup(sp_types), rem, rem, make_markup(main_menu)]
+rem = types.ReplyKeyboardRemove()
+interview_markup = [rem, make_markup(gender_types), make_markup(sp_types),
+                    make_markup(occupation_types), rem, make_markup(main_menu)]
