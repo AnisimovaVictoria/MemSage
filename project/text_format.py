@@ -14,7 +14,7 @@ def incap_wrapper(func):
         string = a
 
         def is_letter(sym):
-            if 'a' <= sym <= 'z' or 'A' <= sym <= 'Z' or 'а' <= sym <= 'я' or 'А' <= sym <= 'Я':
+            if sym.isalpha() or sym == ' ' or sym == '-':
                 return True
             else:
                 return False
@@ -111,20 +111,6 @@ def transliterate(string):
 
     return string
 
-
-def get_rid_of_stuff(string):
-    def is_letter(sym):
-        if 'a' <= sym <= 'z' or 'A' <= sym <= 'Z' or 'а' <= sym <= 'я' or 'А' <= sym <= 'Я':
-            return True
-        else:
-            return False
-    a = ''
-    for i in string:
-        if not (is_letter(i)):
-            break
-        else:
-            a += i
-    return a
 
 if __name__ == '__main__':
     pass
