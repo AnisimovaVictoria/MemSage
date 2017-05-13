@@ -13,7 +13,7 @@ CREATE TABLE public.memes
   CONSTRAINT unique_name UNIQUE (name)
 )
 
-CREATE TYPE floor AS ENUM ('linoleum', 'laminate', 'kovrolin', 'keramogranit', 'parquet', 'hardwood', 'self-leveling');
+CREATE TYPE floor AS ENUM ('ЛИНОЛЕУМ', 'ЛАМИНАТ', 'КОВРОЛИН', 'КЕРАМОГРАНИТ', 'ПАРКЕТ', 'БРЕВЕНЧАТЫЙ', 'НАЛИВНОЙ');
 CREATE TYPE sp_type AS ENUM ('FOREVER ALONE((', 'IN LOVE', 'ЕСТЬ ЕДА', 'ВСЕ ОЧЕНЬ СЛОЖНА');
 CREATE TYPE occup_type AS ENUM ('pre!shkolyar', 'shkolyar', 'fiztech!shkolyar', 'post!shkolyar');
 
