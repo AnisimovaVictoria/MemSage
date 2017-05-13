@@ -26,17 +26,38 @@ def print_names(cursor):
         sys.exit(1)
 
 
+def set_user(res, curs, conn):
+    try:
+        curs.execute("""INSERT INTO bros(name, gender, sp, occupation, city, is_hikka)
+    VALUES (%s, %s, %s, %s, %s, %s);""",
+                     res)
+    except psycopg2.DatabaseError:
+        print("length of some word is too big")
+        sys.exit(1)
+    else:
+        conn.commit()
+
+
+def delete_user(user_id, cursor, conn):
+    try:
+        a = [user_id]
+        cursor.execute("""
+        DELETE FROM bros
+        WHERE bro_id = %s
+        """, a)
+    except psycopg2.DatabaseError:
+        print("length of some word is too big")
+        sys.exit(1)
+    else:
+        conn.commit()
+
+
 def set_like(user_id, mem_id, cursor, conn):
     try:
         a = [mem_id, user_id]
         cursor.execute("INSERT INTO megustas (mem_id, bro_id) VALUES (%s, %s);", a)
         a.pop()
         print(a)
-        cursor.execute("""
-        UPDATE memes
-            SET gustas = gustas + 1
-            WHERE mem_id = %s;
-        """, a)
     except psycopg2.DatabaseError:
         print("Database Error\n")
         sys.exit(1)
@@ -48,18 +69,12 @@ def remove_like(user_id, mem_id, cursor, conn):
     try:
         a = [mem_id, user_id]
         cursor.execute("DELETE FROM megustas WHERE (mem_id = %s AND bro_id = %s);", a)
-        a.pop()
+        a = [mem_id]
         print(a)
-        cursor.execute("""
-           UPDATE memes
-               SET gustas = gustas -1
-               WHERE mem_id = %s;
-           """, a)
+        conn.commit()
     except psycopg2.DatabaseError:
         print("Database Error\n")
         sys.exit(1)
-    else:
-        conn.commit()
 
 
 def find_fav_mem(user_id, cursor, conn):
@@ -175,23 +190,14 @@ def most_popular_by_category(mem_category, cursor):
         print("Database Error\n")
         sys.exit(1)
        
-# currently working at text formatting like "MOsква))0)" converts to "Moskva"
-
+def close_conn(conn):
+    if (conn):
+        conn.close()
 
 if __name__ == '__main__':
     conn = con_db()
     curs = cursor(conn)
-    try:
-        curs.execute("""
-        INSERT INTO bros(name, gender, sp, occupation, city, is_hikka)
-        VALUES (%s, %s, %s, %s, %s, %s);
-        """,
-        res)
-    except psycopg2.DatabaseError:
-        print("length of some word is too big")
-        sys.exit(1)
-    else:
-        conn.commit()
+    
     curs.close()
     if (conn):
         conn.close()
