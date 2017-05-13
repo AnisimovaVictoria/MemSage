@@ -3,7 +3,7 @@ CREATE TABLE public.memes
 (
   mem_id integer NOT NULL DEFAULT nextval('auto_id_mems'::regclass),
   file_id text NOT NULL default '0'::text,
-  mem_type DEFAULT 'Пепе',
+  mem_type text DEFAULT 'Пепе',
   gustas integer DEFAULT 0,
   CONSTRAINT memes_pkey PRIMARY KEY (mem_id)
 )
@@ -23,7 +23,7 @@ CREATE TABLE public.bros
   occupation occup_type DEFAULT 'shkolyar'::occup_type,
   city character varying(30),
   is_hikka boolean DEFAULT true,
-  fav_mem DEFAULT 'Пепе',
+  fav_mem DEFAULT 'Пепе' references memes(mem_type),
   CONSTRAINT bros_pkey PRIMARY KEY (bro_id)
 )
 -- DROP INDEX public.bro_id_idx;
@@ -36,8 +36,8 @@ CREATE UNIQUE INDEX bro_id_idx
 
 CREATE TABLE public.megustas
 (
-  mem_id integer NOT NULL,
-  bro_id integer NOT NULL,
+  mem_id integer NOT NULL references memes(mem_id),
+  bro_id integer NOT NULL references bros(bro_id),
   data date DEFAULT current_date,
   CONSTRAINT megustas_pkey PRIMARY KEY (mem_id, bro_id)
 );
