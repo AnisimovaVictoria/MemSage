@@ -1,4 +1,5 @@
 import psycopg2
+import translit
 import sys
 
 
@@ -64,12 +65,14 @@ def remove_like(user_id, mem_id, cursor, conn):
 def find_fav_mem(user_id, cursor, conn):
     try:
         a = [user_id]
-        cursor.execute("""SELECT memes.type
+        cursor.execute("""
+        SELECT memes.type
         FROM megustas NATURAL JOIN memes
         WHERE megustas.bro_id = %s
         GROUP BY type
         ORDER BY COUNT(memes.type) DESC
-        LIMIT 1;""", a)
+        LIMIT 1;
+        """, a)
         b = cursor.fetchall()[0][0]
         a = [b, user_id]
         print(a)
@@ -85,31 +88,38 @@ def find_fav_mem(user_id, cursor, conn):
         sys.exit(1)
 
 
-def find_popular(mem_type, cursor):
+def find_hot_stuff(cursor):
     try:
-        a = [mem_type]
-        cursor.mogrify("SELECT mem_id FROM memes ORDER BY likes DESC LIMIT 20;", a)
+        cursor.execute("""
+        SELECT mem_id, name, gustas
+        FROM memes
+        ORDER BY gustas DESC
+        LIMIT 20;
+        """)
         b = cursor.fetchall()
         return b
     except psycopg2.DatabaseError:
         print("Database Error\n")
         sys.exit(1)
-     
-_
-def set_user(res)
+
+
+def find_trending_stuff(cursor):
     try:
-            curs.execute("""
-            INSERT INTO bros(name, gender, sp, occupation, city, is_hikka)
-            VALUES (%s, %s, %s, %s, %s, %s);
-            """,
-            res)
-        except psycopg2.DatabaseError:
-            print("length of some word is too big")
-            sys.exit(1)
-        else:
-            conn.commit()
-    
-    
+        cursor.execute("""
+        SELECT mem_id, name, gustas
+        FROM memes
+        NATURAL JOIN megustas
+        WHERE (megustas.data > (current_date - INTERVAL'1 week')::date)
+        ORDER BY gustas
+        DESC LIMIT 20;
+        """)
+        b = cursor.fetchall()
+        return b
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
+
+
 def find_bratans_memes(fav_meme_category, user_id, cursor):
     try:
         a = [fav_meme_category, user_id]
@@ -122,6 +132,48 @@ def find_bratans_memes(fav_meme_category, user_id, cursor):
         return b
     except psycopg2.DatabaseError:
         print("Database Error\n")
+
+
+def show_bratans (bratans):
+    """Показать найденных братанов, можно типа новых после каждой итерации"""
+    pass
+
+
+def find_bros_cities(city_name, useless_id, cursor):
+    """Показать братанов по городу"""
+    try:
+        b = translit.transliterate(city_name)
+        # на случай фигни какой-то
+        if b == '':
+            return []
+        a = [b, useless_id]
+        cursor.execute("""
+        SELECT bro_id
+        FROM bros
+        WHERE (city = %s) AND NOT (bro_id = %s ) AND (is_hikka = FALSE);
+        """, a)
+        c = cursor.fetchall()
+        return c
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
+
+
+def most_popular_by_category(mem_category, cursor):
+    try:
+        a = [mem_category]
+        cursor.mogrify("""
+        SELECT mem_id
+        FROM memes
+        WHERE type = %s
+        ORDER BY gustas DESC
+        LIMIT 10;
+        """, a)
+        c = cursor.fetchall()
+        return c
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
        
 # currently working at text formatting like "MOsква))0)" converts to "Moskva"
 
