@@ -1,5 +1,5 @@
 import psycopg2
-import translit
+import text_format
 import sys
 
 
