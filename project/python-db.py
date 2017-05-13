@@ -25,64 +25,116 @@ def print_names(cursor):
         sys.exit(1)
 
 
-def user_introducer():
-    print("Hey! What's your name?")
-    imya = input()
-    print("It took 1 look and now we're not the same))) \n And where are you from?")
-    city = input()
-    print("Oh, I was there, it's beautiful place:)\n Кстати, как к тебе обращаться?")
-    print(" Выбери пол, наиболее подходящий твоим внутренним ощущениям, ответь номером из предлож. списка")
-    print("""Вот список:
-        0 - ЛИНОЛЕУМ,
-        1 - ЛАМИНАТ,
-        2 - КОВРОЛИН,
-        3 - КЕРАМОГРАНИТ,
-        4 - ПАРКЕТ,
-        5 - БРЕВЕНЧАТЫЙ,
-        6 - НАЛИВНОЙ""")
-    floor = input()
-    numb_to_gend = {
-        '0': 'linoleum',
-        '1': 'laminate',
-        '2': 'kovrolin',
-        '3': 'keramogranit',
-        '4': 'parquet',
-        '5': 'hardwood',
-        '6': 'self-leveling'
-    }
-    gender = numb_to_gend[floor]
-    print("""Alright! Now let's move on to your occupation. Type\n0 if you're a preschooler,\n 1 if you're schoolchild,
-        2 if you're a fiztech, \n 3 if u've got your bachelor's """)
-    occ = input()
-    numb_to_occ = {
-        '0': 'pre!shkolyar',
-        '1': 'shkolyar',
-        '2': 'fiztech!shkolyar',
-        '3': 'post!shkolyar',
-    }
-    shk = numb_to_occ[occ]
-    print("final question: \nDo you have that special someone who makes your heart GO DOKI-DOKI??? \nANSWER YES OR NO")
-    ans = input()
-    ans_to_sp = {'YES': 'IN LOVE', 'NO': 'forever alone'}
-    sp = ans_to_sp[ans]
-    result_list = []
-    result_list.append(imya)
-    result_list.append(sp)
-    result_list.append(shk)
-    result_list.append(city)
-    result_list.append(gender)
-    print(result_list)
-    return result_list
+def set_like(user_id, mem_id, cursor, conn):
+    try:
+        a = [mem_id, user_id]
+        cursor.execute("INSERT INTO megustas (mem_id, bro_id) VALUES (%s, %s);", a)
+        a.pop()
+        print(a)
+        cursor.execute("""
+        UPDATE memes
+            SET gustas = gustas + 1
+            WHERE mem_id = %s;
+        """, a)
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
+    else:
+        conn.commit()
+
+
+def remove_like(user_id, mem_id, cursor, conn):
+    try:
+        a = [mem_id, user_id]
+        cursor.execute("DELETE FROM megustas WHERE (mem_id = %s AND bro_id = %s);", a)
+        a.pop()
+        print(a)
+        cursor.execute("""
+           UPDATE memes
+               SET gustas = gustas -1
+               WHERE mem_id = %s;
+           """, a)
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
+    else:
+        conn.commit()
+
+
+def find_fav_mem(user_id, cursor, conn):
+    try:
+        a = [user_id]
+        cursor.execute("""SELECT memes.type
+        FROM megustas NATURAL JOIN memes
+        WHERE megustas.bro_id = %s
+        GROUP BY type
+        ORDER BY COUNT(memes.type) DESC
+        LIMIT 1;""", a)
+        b = cursor.fetchall()[0][0]
+        a = [b, user_id]
+        print(a)
+        cursor.execute("""
+        UPDATE bros
+            SET fav_mem = %s
+            WHERE bro_id = %s
+        """, a)
+        conn.commit()
+        return a[0]
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
+
+
+def find_popular(mem_type, cursor):
+    try:
+        a = [mem_type]
+        cursor.mogrify("SELECT mem_id FROM memes ORDER BY likes DESC LIMIT 20;", a)
+        b = cursor.fetchall()
+        return b
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
+     
+_
+def set_user(res)
+    try:
+            curs.execute("""
+            INSERT INTO bros(name, gender, sp, occupation, city, is_hikka)
+            VALUES (%s, %s, %s, %s, %s, %s);
+            """,
+            res)
+        except psycopg2.DatabaseError:
+            print("length of some word is too big")
+            sys.exit(1)
+        else:
+            conn.commit()
+    
+    
+def find_bratans_memes(fav_meme_category, user_id, cursor):
+    try:
+        a = [fav_meme_category, user_id]
+        cursor.execute("""
+        SELECT bro_id
+        FROM bros
+        WHERE (fav_mem = %s) AND NOT(bro_id = %s ) AND (is_hikka = FALSE);
+        """, a)
+        b = cursor.fetchall()
+        return b
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+       
+# currently working at text formatting like "MOsква))0)" converts to "Moskva"
 
 
 if __name__ == '__main__':
     conn = con_db()
     curs = cursor(conn)
-    print_names(curs)
-    res = user_introducer()
     try:
-        curs.execute("INSERT INTO bros(name, sp, occupation, city, gender) VALUES (%s, %s, %s, %s, %s);",
-                     res)
+        curs.execute("""
+        INSERT INTO bros(name, gender, sp, occupation, city, is_hikka)
+        VALUES (%s, %s, %s, %s, %s, %s);
+        """,
+        res)
     except psycopg2.DatabaseError:
         print("length of some word is too big")
         sys.exit(1)
