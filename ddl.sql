@@ -49,9 +49,13 @@ CREATE TABLE relationships
 	PRIMARY KEY (first_bro, second_bro)
 );
 
-CREATE TABLE megustas
+
+
+CREATE TABLE public.megustas
 (
-	mem_id integer REFERENCES memes(mem_id),
-	bro_id integer REFERENCES bros(bro_id),
-	PRIMARY KEY (mem_id, bro_id)
+  mem_id integer NOT NULL,
+  bro_id integer NOT NULL,
+  data date DEFAULT current_date,
+  CONSTRAINT megustas_pkey PRIMARY KEY (mem_id, bro_id)
 );
+
