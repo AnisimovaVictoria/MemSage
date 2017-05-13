@@ -189,6 +189,55 @@ def most_popular_by_category(mem_category, cursor):
     except psycopg2.DatabaseError:
         print("Database Error\n")
         sys.exit(1)
+        
+def most_popular_by_city(city, cursor):
+    try:
+        a = [city]
+        cursor.execute("""
+        SELECT mem_id
+        FROM (memes NATURAL JOIN megustas) NATURAL JOIN bros
+        WHERE bros.city = %s
+        ORDER BY memes.gustas DESC
+        LIMIT 10;
+        """, a)
+        c = cursor.fetchall()
+        return c
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
+
+
+def most_popular_by_gender(gender, cursor):
+    try:
+        cursor.execute("""
+        SELECT mem_id
+        FROM (memes NATURAL JOIN megustas) NATURAL JOIN bros
+        WHERE bros.gender = %s
+        ORDER BY memes.gustas DESC
+        LIMIT 10;
+        """, [gender])
+        c = cursor.fetchall()
+        return c
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
+
+
+def most_popular_by_occ(occ, cursor):
+    try:
+        a = [occ]
+        cursor.execute("""
+        SELECT mem_id
+        FROM (memes NATURAL JOIN megustas) NATURAL JOIN bros
+        WHERE bros.occupation = %s
+        ORDER BY memes.gustas DESC
+        LIMIT 10;
+        """, a)
+        c = cursor.fetchall()
+        return c
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
        
 def close_conn(conn):
     if (conn):
