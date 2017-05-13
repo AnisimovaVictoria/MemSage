@@ -127,6 +127,4 @@ def get_rid_of_stuff(string):
     return a
 
 if __name__ == '__main__':
-    s = input()
-    a = transliterate(s)
-    print(get_rid_of_stuff(a))
+    pass
