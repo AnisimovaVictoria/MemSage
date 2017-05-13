@@ -157,7 +157,7 @@ def show_bratans (bratans):
 def find_bros_cities(city_name, useless_id, cursor):
     """Показать братанов по городу"""
     try:
-        b = translit.transliterate(city_name)
+        b = text_format.transliterate(city_name)
         # на случай фигни какой-то
         if b == '':
             return []
