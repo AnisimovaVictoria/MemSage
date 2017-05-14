@@ -4,6 +4,7 @@ import sys
 
 number_of_memes = 40
 
+
 def con_db():
     try:
         conn = psycopg2.connect(
@@ -68,7 +69,7 @@ def like(user_id, mem_id, cursor, conn):
         else:
             set_like(user_id, mem_id, cursor, conn)
     except psycopg2.DatabaseError as err:
-        print("Database Error", err)
+        print("like Error", err)
         sys.exit(1)
     else:
         conn.commit()
@@ -82,7 +83,7 @@ def set_like(user_id, mem_id, cursor, conn):
         a.pop()
         print(a)
     except psycopg2.DatabaseError as err:
-        print("Database Error", err)
+        print("set_like Error", err)
         sys.exit(1)
     else:
         conn.commit()
@@ -105,11 +106,11 @@ def find_fav_mem(user_id, cursor, conn):
     try:
         a = [user_id]
         cursor.execute("""
-        SELECT memes.type
+        SELECT mem_type
         FROM megustas NATURAL JOIN memes
-        WHERE megustas.bro_id = %s
-        GROUP BY type
-        ORDER BY COUNT(memes.type) DESC
+        WHERE megustas.bro_id = 311155161
+        GROUP BY mem_type
+        ORDER BY COUNT(mem_type) DESC
         LIMIT 1;
         """, a)
         b = cursor.fetchall()[0][0]
@@ -117,13 +118,13 @@ def find_fav_mem(user_id, cursor, conn):
         print(a)
         cursor.execute("""
         UPDATE bros
-            SET fav_mem = %s
+            SET fav_mem = %s    
             WHERE bro_id = %s
         """, a)
         conn.commit()
         return a[0]
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
+    except psycopg2.DatabaseError as err:
+        print("find_fav_mem", err)
         sys.exit(1)
 
 
@@ -138,24 +139,7 @@ def find_hot_stuff(cursor):
         b = cursor.fetchall()
         return b
     except psycopg2.DatabaseError as err:
-        print("Database Error", err)
-        sys.exit(1)
-
-
-def find_trending_stuff(cursor):
-    try:
-        cursor.execute("""
-        SELECT file_id, mem_id
-        FROM memes
-        NATURAL JOIN megustas
-        WHERE (megustas.data > (current_date - INTERVAL'1 week')::date)
-        ORDER BY gustas DESC
-        LIMIT 40;
-        """)
-        b = cursor.fetchall()
-        return b
-    except psycopg2.DatabaseError as err:
-        print("Database Error", err)
+        print("find_hot_stuff Error", err)
         sys.exit(1)
 
 
@@ -170,7 +154,7 @@ def find_new_stuff(cursor):
         b = cursor.fetchall()
         return b
     except psycopg2.DatabaseError as err:
-        print("Database Error", err)
+        print("find_new_stuff Error", err)
         sys.exit(1)
 
 
@@ -184,8 +168,8 @@ def find_bros_memes(fav_meme_category, user_id, cursor):
         """, a)
         b = cursor.fetchall()
         return b
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
+    except psycopg2.DatabaseError as err:
+        print("find_bros_memes Error", err)
 
 
 def find_bros_cities(city_name, useless_id, cursor):
@@ -203,25 +187,38 @@ def find_bros_cities(city_name, useless_id, cursor):
         """, a)
         c = cursor.fetchall()
         return c
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
+    except psycopg2.DatabaseError as err:
+        print("find_bros_cities Error", err)
+        sys.exit(1)
+
+
+def get_all_cities(cursor):
+    try:
+        cursor.execute("""
+        SELECT DISTINCT ON (city) city
+        FROM bros
+        """)
+        c = cursor.fetchall()
+        return c
+    except psycopg2.DatabaseError as err:
+        print("get_all_cities:", err)
         sys.exit(1)
 
 
 def most_popular_by_category(mem_category, cursor):
     try:
         a = [mem_category]
-        cursor.mogrify("""
+        cursor.execute("""
         SELECT file_id, mem_id
         FROM memes
-        WHERE type = %s
+        WHERE mem_type = %s
         ORDER BY gustas DESC
         LIMIT 40;
         """, a)
         c = cursor.fetchall()
         return c
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
+    except psycopg2.DatabaseError as err:
+        print("most_popular_by_category Error", err)
         sys.exit(1)
 
 
