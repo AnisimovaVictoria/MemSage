@@ -10,33 +10,33 @@ from keyboard import *
 memes = {}  # кешированные мемы
 curr_mem = {}  # текущий мем каждого польователя
 bot = telebot.TeleBot(config.token)
-
+has_session = []
 
 @bot.message_handler(commands=['start'])
 # обработка команды /start
 def start(mes):
-    msg = bot.send_message(mes.chat.id, text.hello + text.questions[0])
-    bot.register_next_step_handler(msg, interview(1, [mes.from_user.id]))
+    c = mes.chat.id
+    if c not in has_session:
+        has_session.append(c)
+        msg = bot.send_message(mes.chat.id, text.hello + text.questions[0])
+        bot.register_next_step_handler(msg, interview(1, [mes.from_user.id]))
+    else:
+        bot.send_message(c, "Зачем тебе это? Просто ответь на предыдущий"
+                                  "вопрос")
 
 
 @bot.message_handler(commands=['continue'])
 def cont(mes):
-    msg = bot.send_message(mes.chat.id, "И снова здравствуйте! Чем изволите"
-                                        " себя развлекать?",
-                           reply_markup=make_markup(menu_list))
-    bot.register_next_step_handler(msg, main_menu)
-
-
-@bot.message_handler(commands=['add_memes'])
-def cont(mes):
-    for category in mem_categories:
-        for file in os.listdir('C:/Users/1/Downloads/' + category + '/'):
-            if file.split('.')[-1] in config.image_types:
-                f = open('C:/Users/1/Downloads/' + category + '/' + file, 'rb')
-                msg = bot.send_photo(mes.chat.id, f)
-                res = [msg.photo[-1].file_id, category, 0]
-                set_mem(res, curs, conn)
-                time.sleep(1)
+    c = mes.chat.id
+    if c not in has_session:
+        has_session.append(c)
+        msg = bot.send_message(c, "И снова здравствуйте! Чем изволите "
+                                  "себя развлечь?",
+                               reply_markup=make_markup(menu_list))
+        bot.register_next_step_handler(msg, main_menu)
+    else:
+        bot.send_message(c, "Зачем тебе это? Просто ответь на предыдущий"
+                                  "вопрос")
 
 
 def interview(i, res):
@@ -131,7 +131,7 @@ def popular2(pop_type):
     def handle(mes):
         c = mes.chat.id
         if mes.text == back:
-            bot.send_message(mes.chat.id, "не понял(",
+            bot.send_message(mes.chat.id, "Выбери",
                              reply_markup=markup_with_back(popular_types))
             bot.register_next_step_handler(mes, popular)
             return
