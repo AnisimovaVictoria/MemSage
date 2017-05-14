@@ -3,14 +3,13 @@ import config
 import telebot
 import text
 import os
+import time
 from python_db import *
 from keyboard import *
 
-conn = ''
-curs = ''
+memes = {}  # кешированные мемы
+curr_mem = {}  # текущий мем каждого польователя
 bot = telebot.TeleBot(config.token)
-memes = {} #кешированные мемы
-curr_mem = {} #текущий мем каждого польователя
 
 
 @bot.message_handler(commands=['start'])
@@ -28,6 +27,18 @@ def cont(mes):
     bot.register_next_step_handler(msg, main_menu)
 
 
+@bot.message_handler(commands=['add_memes'])
+def cont(mes):
+    for category in mem_categories:
+        for file in os.listdir('C:/Users/1/Downloads/' + category + '/'):
+            if file.split('.')[-1] in config.image_types:
+                f = open('C:/Users/1/Downloads/' + category + '/' + file, 'rb')
+                msg = bot.send_photo(mes.chat.id, f)
+                res = [msg.photo[-1].file_id, category, 0]
+                set_mem(res, curs, conn)
+                time.sleep(1)
+
+
 def interview(i, res):
     def ask_question(mes):
         res.append(mes.text)
@@ -35,10 +46,11 @@ def interview(i, res):
                                reply_markup=interview_markup[i])
         if i == len(text.questions) - 1:
             print(res)
-            if res[-1] == "Да":  #потому что is_hikka != хочу находить друзей(
+            if res[-1] == "Да":  #потому что is_hikka != хочу находить друзей
                 res[-1] = False
             else:
                 res[-1] = True
+            res[-2] = text_format.transliterate(res[-2])
 
             set_user(res, curs=curs, conn=conn)
             bot.register_next_step_handler(msg, main_menu)
@@ -54,39 +66,32 @@ def main_menu(mes):
         # Посмотреть мемес
         if mes.text == menu_list[0]:
             msg = bot.send_message(mes.chat.id, "Выбери тип:",
-                                   reply_markup=make_markup(mem_types))
+                                   reply_markup=markup_with_back(mem_types))
             bot.register_next_step_handler(msg, choose_mem)
         # Добавить мемес
         if mes.text == menu_list[1]:
             msg = bot.send_message(mes.chat.id, "Ура! Новые мемы)))"
                                                 "Первым делом скажи, к какой"
                                                 "категории отнемти этот мем?",
-                                   reply_markup=make_markup(mem_categories))
+                                   reply_markup=markup_with_back(mem_categories))
             bot.register_next_step_handler(msg, add_mem)
-        # Найти друзей
-        if mes.text == menu_list[2]:
-            find_friend(mes)
-            bot.register_next_step_handler(mes.chat.id, main_menu)
 
 
 def choose_mem(mes):
+    c = mes.chat.id
+    if mes.text == back:
+        msg = bot.send_message(c, "Что ты хочешь?",
+                               reply_markup=make_markup(menu_list))
+        bot.register_next_step_handler(msg, main_menu)
+        return
     if mes.text in mem_types:
-        # пользователь нажал "Назад"
-        c = mes.chat.id
         if mes.text == mem_types[-1]:
-            msg = bot.send_message(c, "Что ты хочешь?",
-                             reply_markup=make_markup(menu_list))
-            bot.register_next_step_handler(msg, main_menu)
-            return
-
-        if mes.text == mem_types[-2]:
             msg = bot.send_message(c, "Популярное среди чего?",
-                                   reply_markup=make_markup(popular_types))
+                                   reply_markup=markup_with_back(popular_types))
             bot.register_next_step_handler(msg, popular)
             return
 
-        funcs = {mem_types[0]: find_hot_stuff, mem_types[1]: find_trending_stuff,
-                 mem_types[2]: find_trending_stuff}
+        funcs = {mem_types[0]: find_hot_stuff, mem_types[1]: find_new_stuff}
         func = funcs[mes.text]
         i = func(curs)
         memes[c] = i
@@ -97,23 +102,38 @@ def choose_mem(mes):
         else:
             msg = bot.send_message(c, "Тут пока ничего нет("
                                       "Выбери что-то другое",
-                                   reply_markup=make_markup(mem_types))
+                                   reply_markup=markup_with_back(mem_types))
             bot.register_next_step_handler(msg, choose_mem)
     else:
         bot.register_next_step_handler(mes, choose_mem)
 
 
 def popular(mes):
-    if mes.text in mem_types:
-        # пользователь нажал "Назад"
+    c = mes.chat.id
+    if mes.text == back:
+        msg = bot.send_message(c, "Что ты хочешь?",
+                               reply_markup=make_markup(menu_list))
+        bot.register_next_step_handler(msg, main_menu)
+        return
+
+    if mes.text in popular_types:
+        bot.send_message(c, "Выбери", reply_markup=markup_with_back(popular_dict[mes.text]))
+        bot.register_next_step_handler(mes, popular2(mes.text))
+        return
+    else:
+        bot.register_next_step_handler(mes, choose_mem)
+
+
+def popular2(pop_type):
+    def handle(mes):
         c = mes.chat.id
-        if mes.text == mem_types[-1]:
-            msg = bot.send_message(c, "Что ты хочешь?",
-                             reply_markup=make_markup(menu_list))
-            bot.register_next_step_handler(msg, main_menu)
+        if mes.text == back:
+            bot.send_message(mes.chat.id, "не понял(",
+                             reply_markup=markup_with_back(popular_types))
+            bot.register_next_step_handler(mes, popular)
             return
 
-        memes[c] = most_popular_by_category(mes.text, curs)
+        memes[c] = popular_func[pop_type](mes.text, curs)
         if len(memes[c]) > 0:
             curr_mem[c] = 0
             msg = bot.send_photo(c, memes[c][0][0], reply_markup=mem())
@@ -121,25 +141,25 @@ def popular(mes):
         else:
             msg = bot.send_message(c, "Тут пока ничего нет("
                                       "Выбери что-то другое",
-                                   reply_markup=make_markup(mem_types))
-            bot.register_next_step_handler(msg, choose_mem)
-    else:
-        bot.register_next_step_handler(mes, choose_mem)
+                                   reply_markup=markup_with_back(popular_types))
+            bot.register_next_step_handler(msg, popular)
+
+    return handle
 
 
 def memming(mes):
     c = mes.chat.id
+    if mes.text == back:
+        msg = bot.send_message(c, "Выбери",
+                               reply_markup=markup_with_back(mem_types))
+        bot.register_next_step_handler(msg, choose_mem)
+        return
+
     if mes.text not in mem_resp:
         msg = bot.send_message(c, "что-то я не понял( попробуй еще раз",
                                reply_markup=mem())
         bot.register_next_step_handler(msg, memming)
         return
-    if mes.text == mem_resp[-1]:
-        msg = bot.send_message(c, "Выбери",
-                               reply_markup=make_markup(mem_types))
-        bot.register_next_step_handler(msg, choose_mem)
-        return
-
     if mes.text == mem_resp[1]:
         like(mes.from_user.id, memes[c][curr_mem[c]][1], curs, conn)
         bot.register_next_step_handler(mes, memming)
@@ -154,19 +174,20 @@ def memming(mes):
     msg = bot.send_photo(c, memes[c][curr_mem[c]][0], reply_markup=mem())
     bot.register_next_step_handler(msg, memming)
 
+
 def add_mem(mes):
     c = mes.chat.id
+    if mes.text == back:
+        msg = bot.send_message(c, "Что ты хочешь?",
+                               reply_markup=make_markup(menu_list))
+        bot.register_next_step_handler(msg, main_menu)
+        return
+
     if mes.text not in mem_categories:
         msg = bot.send_message(c, "Выбери одну из предложенных категорий",
-                         reply_markup=make_markup(mem_categories))
+                         reply_markup=markup_with_back(mem_categories))
         bot.register_next_step_handler(msg, add_mem)
     else:
-        if mes.text == mem_categories[-1]:
-            msg = bot.send_message(c, "Что ты хочешь?",
-                                   reply_markup=make_markup(menu_list))
-            bot.register_next_step_handler(msg, main_menu)
-            return
-
         msg = bot.send_message(c, "Теперь отправь картинку)")
         bot.register_next_step_handler(msg, add_mem2(mes.text))
 
@@ -175,22 +196,15 @@ def add_mem2(category):
     def final_adding(mes):
         res = [mes.photo[-1].file_id, category, 0]
         set_mem(res, curs,conn)
+        bot.send_message(mes.chat.id, "Ура! Новый мемес) "
+                                      "Го ещё))000", reply_markup=markup_with_back(mem_categories))
+        bot.register_next_step_handler(mes, add_mem)
     return final_adding
 
-
-def find_friend(mes):
-    res = find_bros_memes(find_fav_mem(mes.from_user.id, curs, conn), mes.from_user.id, curs)
-    txt = "Думаю ты сдружишься с:\n"
-    for i in res:
-        txt += str(i)+'\n'
-    bot.send_message(mes.chat.id, txt)
-    bot.send_message(mes.chat.id, "Продолжаем разговор", reply_markup=make_markup(menu_list))
-    bot.register_next_step_handler(mes, main_menu)
 
 if __name__ == '__main__':
     conn = con_db()
     curs = conn.cursor()
     bot.polling(none_stop=True)
     curs.close()
-    if conn:
-        conn.close()
+
