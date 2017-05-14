@@ -39,7 +39,7 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION public.set_like()
+ALTER FUNCTION public.remove_like()
   OWNER TO postgres;
 
 CREATE TRIGGER remove_gust
@@ -65,7 +65,7 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION public.set_like()
+ALTER FUNCTION public.remove_user_likes()
   OWNER TO postgres;
 
 CREATE TRIGGER remove_user
