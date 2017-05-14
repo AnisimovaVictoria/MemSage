@@ -2,10 +2,12 @@ import psycopg2
 import text_format
 import sys
 
+number_of_memes = 40
 
 def con_db():
     try:
-        conn = psycopg2.connect(dbname='memsa', user='postgres', host='localhost', port='54321', password='scattered')
+        conn = psycopg2.connect(
+            "dbname='Memsage' user='postgres' host='127.0.0.1' password='postgres'")
         return conn
     except psycopg2.DatabaseError:
         print("Error")
@@ -28,11 +30,11 @@ def print_names(cursor):
 
 def set_user(res, curs, conn):
     try:
-        curs.execute("""INSERT INTO bros(name, gender, sp, occupation, city, is_hikka)
-    VALUES (%s, %s, %s, %s, %s, %s);""",
+        curs.execute("""INSERT INTO bros(bro_id, name, gender, sp, occupation, city, is_hikka)
+    VALUES (%s, %s, %s, %s, %s, %s, %s);""",
                      res)
-    except psycopg2.DatabaseError:
-        print("length of some word is too big")
+    except psycopg2.DatabaseError as err:
+        print("set_user error", err)
         sys.exit(1)
     else:
         conn.commit()
@@ -52,14 +54,35 @@ def delete_user(user_id, cursor, conn):
         conn.commit()
 
 
+def like(user_id, mem_id, cursor, conn):
+    try:
+        a = [mem_id, user_id]
+        cursor.execute("SELECT * "
+                       "FROM megustas "
+                       "WHERE mem_id = %s "
+                       "AND bro_id = %s",
+                       a)
+        b = cursor.fetchall()
+        if len(b) > 0:
+            remove_like(user_id, mem_id, cursor, conn)
+        else:
+            set_like(user_id, mem_id, cursor, conn)
+    except psycopg2.DatabaseError as err:
+        print("Database Error", err)
+        sys.exit(1)
+    else:
+        conn.commit()
+
+
 def set_like(user_id, mem_id, cursor, conn):
     try:
         a = [mem_id, user_id]
-        cursor.execute("INSERT INTO megustas (mem_id, bro_id) VALUES (%s, %s);", a)
+        cursor.execute("INSERT INTO megustas (mem_id, bro_id) VALUES (%s, %s);",
+                       a)
         a.pop()
         print(a)
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
+    except psycopg2.DatabaseError as err:
+        print("Database Error", err)
         sys.exit(1)
     else:
         conn.commit()
@@ -68,12 +91,13 @@ def set_like(user_id, mem_id, cursor, conn):
 def remove_like(user_id, mem_id, cursor, conn):
     try:
         a = [mem_id, user_id]
-        cursor.execute("DELETE FROM megustas WHERE (mem_id = %s AND bro_id = %s);", a)
+        cursor.execute(
+            "DELETE FROM megustas WHERE (mem_id = %s AND bro_id = %s);", a)
         a = [mem_id]
         print(a)
         conn.commit()
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
+    except psycopg2.DatabaseError as err:
+        print("remove_like Error", err)
         sys.exit(1)
 
 
@@ -106,32 +130,47 @@ def find_fav_mem(user_id, cursor, conn):
 def find_hot_stuff(cursor):
     try:
         cursor.execute("""
-        SELECT mem_id, name, gustas
+        SELECT file_id, mem_id
         FROM memes
         ORDER BY gustas DESC
-        LIMIT 20;
+        LIMIT 40;
         """)
         b = cursor.fetchall()
         return b
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
+    except psycopg2.DatabaseError as err:
+        print("Database Error", err)
         sys.exit(1)
 
 
 def find_trending_stuff(cursor):
     try:
         cursor.execute("""
-        SELECT mem_id, name, gustas
+        SELECT file_id, mem_id
         FROM memes
         NATURAL JOIN megustas
         WHERE (megustas.data > (current_date - INTERVAL'1 week')::date)
-        ORDER BY gustas
-        DESC LIMIT 20;
+        ORDER BY gustas DESC
+        LIMIT 40;
         """)
         b = cursor.fetchall()
         return b
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
+    except psycopg2.DatabaseError as err:
+        print("Database Error", err)
+        sys.exit(1)
+
+
+def find_new_stuff(cursor):
+    try:
+        cursor.execute("""
+        SELECT file_id, mem_id
+        FROM memes
+        ORDER BY mem_id DESC
+        LIMIT 40;
+        """)
+        b = cursor.fetchall()
+        return b
+    except psycopg2.DatabaseError as err:
+        print("Database Error", err)
         sys.exit(1)
 
 
@@ -147,11 +186,6 @@ def find_bratans_memes(fav_meme_category, user_id, cursor):
         return b
     except psycopg2.DatabaseError:
         print("Database Error\n")
-
-
-def show_bratans (bratans):
-    """Показать найденных братанов, можно типа новых после каждой итерации"""
-    pass
 
 
 def find_bros_cities(city_name, useless_id, cursor):
@@ -189,64 +223,29 @@ def most_popular_by_category(mem_category, cursor):
     except psycopg2.DatabaseError:
         print("Database Error\n")
         sys.exit(1)
-        
-def most_popular_by_city(city, cursor):
+
+
+def set_mem(res, curs, conn):
     try:
-        a = [city]
-        cursor.execute("""
-        SELECT mem_id
-        FROM (memes NATURAL JOIN megustas) NATURAL JOIN bros
-        WHERE bros.city = %s
-        ORDER BY memes.gustas DESC
-        LIMIT 10;
-        """, a)
-        c = cursor.fetchall()
-        return c
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
+        curs.execute("""INSERT INTO public.memes(file_id, mem_type, gustas)
+        VALUES (%s, %s, %s);""", res)
+
+    except psycopg2.DatabaseError as err:
+        print("set_mem error", err)
         sys.exit(1)
+    else:
+        conn.commit()
 
 
-def most_popular_by_gender(gender, cursor):
-    try:
-        cursor.execute("""
-        SELECT mem_id
-        FROM (memes NATURAL JOIN megustas) NATURAL JOIN bros
-        WHERE bros.gender = %s
-        ORDER BY memes.gustas DESC
-        LIMIT 10;
-        """, [gender])
-        c = cursor.fetchall()
-        return c
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
-        sys.exit(1)
-
-
-def most_popular_by_occ(occ, cursor):
-    try:
-        a = [occ]
-        cursor.execute("""
-        SELECT mem_id
-        FROM (memes NATURAL JOIN megustas) NATURAL JOIN bros
-        WHERE bros.occupation = %s
-        ORDER BY memes.gustas DESC
-        LIMIT 10;
-        """, a)
-        c = cursor.fetchall()
-        return c
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
-        sys.exit(1)
-       
 def close_conn(conn):
     if (conn):
         conn.close()
 
+
 if __name__ == '__main__':
     conn = con_db()
     curs = cursor(conn)
-    
+
     curs.close()
     if (conn):
         conn.close()
