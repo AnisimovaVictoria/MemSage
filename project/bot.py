@@ -192,3 +192,5 @@ if __name__ == '__main__':
     curs = conn.cursor()
     bot.polling(none_stop=True)
     curs.close()
+    if conn:
+        conn.close()
