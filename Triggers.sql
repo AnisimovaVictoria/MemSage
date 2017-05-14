@@ -43,7 +43,7 @@ ALTER FUNCTION public.set_like()
   OWNER TO postgres;
 
 CREATE TRIGGER remove_gust
-AFTER DELETE FROM megustas FOR EACH ROW 
+AFTER DELETE ON megustas FOR EACH ROW 
 EXECUTE PROCEDURE remove_like();
 
 
@@ -57,7 +57,7 @@ CREATE OR REPLACE FUNCTION public.remove_user_likes()
 $BODY$
 BEGIN 
 
-DELETE FROM megustas
+DELETE ON megustas
 WHERE megustas.bro_id = OLD.bro_id;
 return NEW;
 
