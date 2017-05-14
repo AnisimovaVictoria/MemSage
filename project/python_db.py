@@ -19,16 +19,6 @@ def cursor(conn):
     return conn.cursor()
 
 
-def print_names(cursor):
-    try:
-        cursor.execute('Select type from memes')
-        names = cursor.fetchall()
-        print(names[0])
-    except psycopg2.DatabaseError:
-        print("Error")
-        sys.exit(1)
-
-
 def set_user(res, curs, conn):
     try:
         curs.execute("""INSERT INTO bros(bro_id, name, gender, sp, occupation, city, is_hikka)
@@ -36,7 +26,6 @@ def set_user(res, curs, conn):
                      res)
     except psycopg2.DatabaseError as err:
         print("set_user error", err)
-        sys.exit(1)
     else:
         conn.commit()
 
@@ -50,7 +39,6 @@ def delete_user(user_id, cursor, conn):
         """, a)
     except psycopg2.DatabaseError:
         print("length of some word is too big")
-        sys.exit(1)
     else:
         conn.commit()
 
@@ -70,7 +58,6 @@ def like(user_id, mem_id, cursor, conn):
             set_like(user_id, mem_id, cursor, conn)
     except psycopg2.DatabaseError as err:
         print("like Error", err)
-        sys.exit(1)
     else:
         conn.commit()
 
@@ -84,7 +71,6 @@ def set_like(user_id, mem_id, cursor, conn):
         print(a)
     except psycopg2.DatabaseError as err:
         print("set_like Error", err)
-        sys.exit(1)
     else:
         conn.commit()
 
@@ -99,7 +85,6 @@ def remove_like(user_id, mem_id, cursor, conn):
         conn.commit()
     except psycopg2.DatabaseError as err:
         print("remove_like Error", err)
-        sys.exit(1)
 
 
 def find_fav_mem(user_id, cursor, conn):
@@ -125,7 +110,6 @@ def find_fav_mem(user_id, cursor, conn):
         return a[0]
     except psycopg2.DatabaseError as err:
         print("find_fav_mem", err)
-        sys.exit(1)
 
 
 def find_hot_stuff(cursor):
@@ -140,7 +124,6 @@ def find_hot_stuff(cursor):
         return b
     except psycopg2.DatabaseError as err:
         print("find_hot_stuff Error", err)
-        sys.exit(1)
 
 
 def find_new_stuff(cursor):
@@ -155,7 +138,6 @@ def find_new_stuff(cursor):
         return b
     except psycopg2.DatabaseError as err:
         print("find_new_stuff Error", err)
-        sys.exit(1)
 
 
 def find_bros_memes(fav_meme_category, user_id, cursor):
@@ -189,7 +171,6 @@ def find_bros_cities(city_name, useless_id, cursor):
         return c
     except psycopg2.DatabaseError as err:
         print("find_bros_cities Error", err)
-        sys.exit(1)
 
 
 def get_all_cities(cursor):
@@ -202,7 +183,6 @@ def get_all_cities(cursor):
         return c
     except psycopg2.DatabaseError as err:
         print("get_all_cities:", err)
-        sys.exit(1)
 
 
 def most_popular_by_category(mem_category, cursor):
@@ -219,29 +199,28 @@ def most_popular_by_category(mem_category, cursor):
         return c
     except psycopg2.DatabaseError as err:
         print("most_popular_by_category Error", err)
-        sys.exit(1)
-        
-        
-def most_popular_by_city(city, cursor):
-    try:
-        a = [city]
-        cursor.execute("""
-        SELECT memes.mem_id, count(memes.mem_id) as likes
-        FROM memes 
-        INNER JOIN megustas 
-        ON memes.mem_id = megustas.mem_id 
-        INNER JOIN bros ON bros.bro_id = megustas.bro_id
-        WHERE bros.city = %s
-        Group BY memes.mem_id
-        ORDER BY likes DESC
-        LIMIT 10;
-        """, a)
-        c = cursor.fetchall()
-        return c
-    except psycopg2.DatabaseError:
-        print("Database Error\n")
-        sys.exit(1)
 
+
+def find_popular_between(name):
+    def most_popular_by_name(val, cursor):
+        try:
+            a = [val]
+            cursor.execute("""
+            SELECT memes.file_id, count(memes.mem_id) as likes
+            FROM memes 
+            INNER JOIN megustas 
+            ON memes.mem_id = megustas.mem_id 
+            INNER JOIN bros ON bros.bro_id = megustas.bro_id
+            WHERE bros."""+name+"""= %s
+            Group BY (memes.mem_id, memes.file_id)
+            ORDER BY likes DESC
+            LIMIT 10;
+            """, a)
+            c = cursor.fetchall()
+            return c
+        except psycopg2.DatabaseError:
+            print("Database Error\n")
+    return most_popular_by_name
 
 def set_mem(res, curs, conn):
     try:
@@ -250,7 +229,6 @@ def set_mem(res, curs, conn):
 
     except psycopg2.DatabaseError as err:
         print("set_mem error", err)
-        sys.exit(1)
     else:
         conn.commit()
 
