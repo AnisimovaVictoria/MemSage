@@ -117,7 +117,10 @@ def popular(mes):
         return
 
     if mes.text in popular_types:
-        bot.send_message(c, "Выбери", reply_markup=markup_with_back(popular_dict[mes.text]))
+        if mes.text == popular_types[1]:
+            bot.send_message(c, "Выбери")
+        else:
+            bot.send_message(c, "Выбери", reply_markup=markup_with_back(popular_dict[mes.text]))
         bot.register_next_step_handler(mes, popular2(mes.text))
         return
     else:
@@ -132,6 +135,8 @@ def popular2(pop_type):
                              reply_markup=markup_with_back(popular_types))
             bot.register_next_step_handler(mes, popular)
             return
+        if pop_type == 'Жителей города на выбор':
+            mes.text = text_format.transliterate(mes.text)
 
         memes[c] = popular_func[pop_type](mes.text, curs)
         if len(memes[c]) > 0:
