@@ -174,7 +174,7 @@ def find_new_stuff(cursor):
         sys.exit(1)
 
 
-def find_bratans_memes(fav_meme_category, user_id, cursor):
+def find_bros_memes(fav_meme_category, user_id, cursor):
     try:
         a = [fav_meme_category, user_id]
         cursor.execute("""
@@ -212,11 +212,11 @@ def most_popular_by_category(mem_category, cursor):
     try:
         a = [mem_category]
         cursor.mogrify("""
-        SELECT mem_id
+        SELECT file_id, mem_id
         FROM memes
         WHERE type = %s
         ORDER BY gustas DESC
-        LIMIT 10;
+        LIMIT 40;
         """, a)
         c = cursor.fetchall()
         return c
