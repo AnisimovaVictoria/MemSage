@@ -4,7 +4,7 @@ from python_db import *
 back = "Назад 🔙"
 
 menu_list = ["Посмотреть мем", "Добавить мем"]
-mem_types = ['Хот', 'Свежак', 'Популярное']
+mem_types = ['Хот', 'Свежак', 'Популярное среди...']
 popular_types = ["Категорий", "Жителей города на выбор",
                  "Представителей одного из полов",
                  "Коллег", "Людей с одним сп"]
@@ -21,7 +21,11 @@ popular_dict = {popular_types[0]: mem_categories,
                 popular_types[2]: gender_types,
                 popular_types[3]: occupation_types,
                 popular_types[4]: sp_types}
-popular_func = {popular_types[0]: most_popular_by_category}
+popular_func = {popular_types[0]: most_popular_by_category,
+                popular_types[1]: find_popular_between('city'),
+                popular_types[2]: find_popular_between('gender'),
+                popular_types[3]: find_popular_between('occupation'),
+                popular_types[4]: find_popular_between('sp')}
 mem_resp = ["◀", "❤", "▶"]
 
 
