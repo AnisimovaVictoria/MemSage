@@ -220,6 +220,27 @@ def most_popular_by_category(mem_category, cursor):
     except psycopg2.DatabaseError as err:
         print("most_popular_by_category Error", err)
         sys.exit(1)
+        
+        
+def most_popular_by_city(city, cursor):
+    try:
+        a = [city]
+        cursor.execute("""
+        SELECT memes.mem_id, count(memes.mem_id) as likes
+        FROM memes 
+        INNER JOIN megustas 
+        ON memes.mem_id = megustas.mem_id 
+        INNER JOIN bros ON bros.bro_id = megustas.bro_id
+        WHERE bros.city = %s
+        Group BY memes.mem_id
+        ORDER BY likes DESC
+        LIMIT 10;
+        """, a)
+        c = cursor.fetchall()
+        return c
+    except psycopg2.DatabaseError:
+        print("Database Error\n")
+        sys.exit(1)
 
 
 def set_mem(res, curs, conn):
