@@ -214,7 +214,7 @@ def find_popular_between(name):
             WHERE bros."""+name+"""= %s
             Group BY (memes.mem_id, memes.file_id)
             ORDER BY likes DESC
-            LIMIT 10;
+            LIMIT 40;
             """, a)
             c = cursor.fetchall()
             return c
