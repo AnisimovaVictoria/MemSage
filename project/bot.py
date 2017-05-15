@@ -11,6 +11,7 @@ memes = {}  # кешированные мемы
 curr_mem = {}  # текущий мем каждого польователя
 bot = telebot.TeleBot(config.token)
 has_session = []
+cursors = {}
 
 @bot.message_handler(commands=['start'])
 # обработка команды /start
@@ -18,6 +19,7 @@ def start(mes):
     c = mes.chat.id
     if c not in has_session:
         has_session.append(c)
+        cursors[c] = cursor(conn)
         msg = bot.send_message(mes.chat.id, text.hello + text.questions[0])
         bot.register_next_step_handler(msg, interview(1, [mes.from_user.id]))
     else:
@@ -30,17 +32,19 @@ def cont(mes):
     c = mes.chat.id
     if c not in has_session:
         has_session.append(c)
+        cursors[c] = cursor(conn)
         msg = bot.send_message(c, "И снова здравствуйте! Чем изволите "
                                   "себя развлечь?",
                                reply_markup=make_markup(menu_list))
         bot.register_next_step_handler(msg, main_menu)
     else:
-        bot.send_message(c, "Зачем тебе это? Просто ответь на предыдущий"
+        bot.send_message(c, "Зачем тебе это? Просто ответь на предыдущий "
                                   "вопрос")
 
 
 def interview(i, res):
     def ask_question(mes):
+        #if i != 4 or res not in
         res.append(mes.text)
         msg = bot.send_message(mes.chat.id, text.questions[i],
                                reply_markup=interview_markup[i])
@@ -51,8 +55,9 @@ def interview(i, res):
             else:
                 res[-1] = True
             res[-2] = text_format.transliterate(res[-2])
+            res[1] = text_format.transliterate(res[0])
 
-            set_user(res, curs=curs, conn=conn)
+            set_user(res, curs=cursors[mes.chat.id], conn=conn)
             bot.register_next_step_handler(msg, main_menu)
         else:
             bot.register_next_step_handler(msg, interview(i+1, res))
@@ -93,8 +98,7 @@ def choose_mem(mes):
 
         funcs = {mem_types[0]: find_hot_stuff, mem_types[1]: find_new_stuff}
         func = funcs[mes.text]
-        i = func(curs)
-        memes[c] = i
+        memes[c] = func(cursors[c])
         if len(memes[c]) > 0:
             curr_mem[c] = 0
             msg = bot.send_photo(c, memes[c][0][0], reply_markup=mem())
@@ -124,7 +128,7 @@ def popular(mes):
         bot.register_next_step_handler(mes, popular2(mes.text))
         return
     else:
-        bot.register_next_step_handler(mes, choose_mem)
+        bot.register_next_step_handler(mes, popular)
 
 
 def popular2(pop_type):
@@ -138,7 +142,7 @@ def popular2(pop_type):
         if pop_type == 'Жителей города на выбор':
             mes.text = text_format.transliterate(mes.text)
 
-        memes[c] = popular_func[pop_type](mes.text, curs)
+        memes[c] = popular_func[pop_type](mes.text, cursors[c])
         if len(memes[c]) > 0:
             curr_mem[c] = 0
             msg = bot.send_photo(c, memes[c][0][0], reply_markup=mem())
@@ -166,7 +170,7 @@ def memming(mes):
         bot.register_next_step_handler(msg, memming)
         return
     if mes.text == mem_resp[1]:
-        like(mes.from_user.id, memes[c][curr_mem[c]][1], curs, conn)
+        like(mes.from_user.id, memes[c][curr_mem[c]][1], cursors[c], conn)
         bot.register_next_step_handler(mes, memming)
         return
 
@@ -200,7 +204,7 @@ def add_mem(mes):
 def add_mem2(category):
     def final_adding(mes):
         res = [mes.photo[-1].file_id, category, 0]
-        set_mem(res, curs,conn)
+        set_mem(res, cursors[mes.chat.id],conn)
         bot.send_message(mes.chat.id, "Ура! Новый мемес) "
                                       "Го ещё))000", reply_markup=markup_with_back(mem_categories))
         bot.register_next_step_handler(mes, add_mem)
@@ -209,7 +213,5 @@ def add_mem2(category):
 
 if __name__ == '__main__':
     conn = con_db()
-    curs = conn.cursor()
     bot.polling(none_stop=True)
-    curs.close()
 
